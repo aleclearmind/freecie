@@ -1,0 +1,75 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: OpenCIE <opencie@localhost>
+Date: Sat, 31 Oct 2026 14:57:06 +0000
+Subject: [PATCH 2/4] Take the PIN as bytes and record the VERIFY status
+
+startSecureChannel/verifyPin took the PIN as a String, which cannot be
+erased. Take the ASCII digits as a ByteArray the caller wipes, and send it
+without making a String copy.
+
+Keep the status word of the last VERIFY PIN in CieCommands.lastPinStatus:
+verifyPin maps every unknown status to 0 ("blocked"), and the app needs
+the real status to tell a blocked PIN from an unexpected card answer.
+---
+ .../it/pagopa/io/app/cie/cie/commands/CieCommands.kt     | 6 +++++-
+ .../java/it/pagopa/io/app/cie/cie/commands/IasUtils.kt   | 9 ++++++---
+ 2 files changed, 11 insertions(+), 4 deletions(-)
+
+diff --git a/CieSDK/src/main/java/it/pagopa/io/app/cie/cie/commands/CieCommands.kt b/CieSDK/src/main/java/it/pagopa/io/app/cie/cie/commands/CieCommands.kt
+index 482c474..73529a7 100644
+--- a/CieSDK/src/main/java/it/pagopa/io/app/cie/cie/commands/CieCommands.kt
++++ b/CieSDK/src/main/java/it/pagopa/io/app/cie/cie/commands/CieCommands.kt
+@@ -22,6 +22,10 @@ internal class CieCommands(internal val onTransmit: OnTransmit) {
+     internal var caCar: ByteArray = byteArrayOf()
+     internal var caAid: ByteArray = byteArrayOf()
+     internal var seq: ByteArray = byteArrayOf()
++
++    /** Status word the card gave to the last VERIFY PIN, e.g. "9000" or "63c2". */
++    @Volatile
++    internal var lastPinStatus: String? = null
+     internal var dhpubKey: ByteArray = byteArrayOf()
+     internal var dhICCpubKey: ByteArray = byteArrayOf()
+ 
+@@ -76,7 +80,7 @@ internal class CieCommands(internal val onTransmit: OnTransmit) {
+      * @throws Exception
+      */
+     @Throws(Exception::class)
+-    fun startSecureChannel(pin: String) {
++    fun startSecureChannel(pin: ByteArray) {
+         this.selectIAS()
+         this.selectCie()
+         this.initDHParam()
+diff --git a/CieSDK/src/main/java/it/pagopa/io/app/cie/cie/commands/IasUtils.kt b/CieSDK/src/main/java/it/pagopa/io/app/cie/cie/commands/IasUtils.kt
+index d32f831..2212ff8 100644
+--- a/CieSDK/src/main/java/it/pagopa/io/app/cie/cie/commands/IasUtils.kt
++++ b/CieSDK/src/main/java/it/pagopa/io/app/cie/cie/commands/IasUtils.kt
+@@ -101,9 +101,11 @@ internal fun CieCommands.readDappPubKey() {
+  * @throws CieSdkException if pin regex is not valid
+  */
+ @Throws(Exception::class)
+-internal fun CieCommands.verifyPin(pin: String): Int {
++internal fun CieCommands.verifyPin(pin: ByteArray): Int {
+     CieLogger.i("COMMANDS", "verifyPin()")
+-    if (!ciePinRegex.matches(pin)) {
++    // The PIN arrives as ASCII digits in a byte array the caller wipes; it is
++    // never turned into a String here.
++    if (pin.size != 8 || pin.any { it < '0'.code.toByte() || it > '9'.code.toByte() }) {
+         throw CieSdkException(NfcError.PIN_REGEX_NOT_VALID)
+     }
+     val verifyPIN = byteArrayOf(0x00, 0x20, 0x00, 0x81.toByte())
+@@ -113,13 +115,14 @@ internal fun CieCommands.verifyPin(pin: String): Int {
+         sessionEncryption,
+         sessMac,
+         verifyPIN,
+-        pin.toByteArray(),
++        pin,
+         null,
+         NfcEvent.VERIFY_PIN
+     )
+     seq = pairBack.first
+     val response = pairBack.second
+     val nt = Utils.bytesToHex(response.swByte)
++    lastPinStatus = nt
+     return when {
+         nt.equals("9000", ignoreCase = true) -> 3
+         nt.equals("ffc2", ignoreCase = true) -> 2

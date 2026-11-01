@@ -1,0 +1,137 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: OpenCIE <opencie@localhost>
+Date: Sat, 31 Oct 2026 14:56:52 +0000
+Subject: [PATCH 1/4] Sign through CieSigner, only with the card key
+
+The JCA provider looked the card up through ReadCie, which pulls in the
+SDK's NFC session, PACE and NIS classes. Use a small holder the app sets
+while a card is connected instead.
+
+Also reject keys that are not CiePrivateKey: the provider is inserted at
+position 1 and must not capture RSA operations for other keys. And honour
+offset/len, which were ignored.
+---
+ .../app/cie/cie/key_store/CieSignatureImpl.kt   |  8 +++++---
+ .../io/app/cie/cie/key_store/CieSigner.kt       | 17 +++++++++++++++++
+ .../pagopa/io/app/cie/cie/key_store/Cipher.kt   | 13 +++++++++++--
+ 3 files changed, 33 insertions(+), 5 deletions(-)
+ create mode 100644 CieSDK/src/main/java/it/pagopa/io/app/cie/cie/key_store/CieSigner.kt
+
+diff --git a/CieSDK/src/main/java/it/pagopa/io/app/cie/cie/key_store/CieSignatureImpl.kt b/CieSDK/src/main/java/it/pagopa/io/app/cie/cie/key_store/CieSignatureImpl.kt
+index def7979..4f07d5a 100644
+--- a/CieSDK/src/main/java/it/pagopa/io/app/cie/cie/key_store/CieSignatureImpl.kt
++++ b/CieSDK/src/main/java/it/pagopa/io/app/cie/cie/key_store/CieSignatureImpl.kt
+@@ -2,7 +2,6 @@ package it.pagopa.io.app.cie.cie.key_store
+ 
+ import it.pagopa.io.app.cie.CieLogger
+ import it.pagopa.io.app.cie.cie.NfcEvent
+-import it.pagopa.io.app.cie.cie.ReadCie
+ import java.security.*
+ 
+ internal open class CieSignatureImpl : SignatureSpi() {
+@@ -14,6 +13,9 @@ internal open class CieSignatureImpl : SignatureSpi() {
+ 
+     @Throws(InvalidKeyException::class)
+     override fun engineInitSign(privateKey: PrivateKey) {
++        // Only handle the card key, so this provider (inserted first) never
++        // captures signatures for unrelated keys.
++        if (privateKey !is CiePrivateKey) throw InvalidKeyException("Not a CIE key")
+         byteToSign = byteArrayOf()
+ 
+     }
+@@ -25,12 +27,12 @@ internal open class CieSignatureImpl : SignatureSpi() {
+     @Throws(SignatureException::class)
+     override fun engineUpdate(bytes: ByteArray?, off: Int, len: Int) {
+         if (bytes != null) {
+-            byteToSign += bytes
++            byteToSign += bytes.copyOfRange(off, off + len)
+         }
+     }
+ 
+     @Throws(NullPointerException::class)
+-    override fun engineSign(): ByteArray? = ReadCie.cieCommands?.sign(byteToSign, NfcEvent.SIGN)
++    override fun engineSign(): ByteArray = CieSigner.sign(byteToSign, NfcEvent.SIGN)
+ 
+     override fun engineVerify(bytes: ByteArray): Boolean {
+         return false
+diff --git a/CieSDK/src/main/java/it/pagopa/io/app/cie/cie/key_store/CieSigner.kt b/CieSDK/src/main/java/it/pagopa/io/app/cie/cie/key_store/CieSigner.kt
+new file mode 100644
+index 0000000..c8532a8
+--- /dev/null
++++ b/CieSDK/src/main/java/it/pagopa/io/app/cie/cie/key_store/CieSigner.kt
+@@ -0,0 +1,17 @@
++package it.pagopa.io.app.cie.cie.key_store
++
++import it.pagopa.io.app.cie.cie.NfcEvent
++import it.pagopa.io.app.cie.cie.commands.CieCommands
++
++/**
++ * The card session the JCA provider signs with, set by the app only while a
++ * card is connected. Replaces `ReadCie.cieCommands` so the provider can be used
++ * without the SDK's own NFC session classes.
++ */
++internal object CieSigner {
++    @Volatile
++    var commands: CieCommands? = null
++
++    fun sign(data: ByteArray, event: NfcEvent): ByteArray =
++        checkNotNull(commands?.sign(data, event)) { "No CIE connected for signing" }
++}
+diff --git a/CieSDK/src/main/java/it/pagopa/io/app/cie/cie/key_store/Cipher.kt b/CieSDK/src/main/java/it/pagopa/io/app/cie/cie/key_store/Cipher.kt
+index 9837871..a34d3b8 100644
+--- a/CieSDK/src/main/java/it/pagopa/io/app/cie/cie/key_store/Cipher.kt
++++ b/CieSDK/src/main/java/it/pagopa/io/app/cie/cie/key_store/Cipher.kt
+@@ -1,8 +1,8 @@
+ package it.pagopa.io.app.cie.cie.key_store
+ 
+ import it.pagopa.io.app.cie.cie.NfcEvent
+-import it.pagopa.io.app.cie.cie.ReadCie
+ import java.security.AlgorithmParameters
++import java.security.InvalidKeyException
+ import java.security.Key
+ import java.security.SecureRandom
+ import java.security.spec.AlgorithmParameterSpec
+@@ -13,6 +13,7 @@ internal class Cipher : CipherSpi() {
+     }
+ 
+     override fun engineInit(opmode: Int, key: Key?, random: SecureRandom?) {
++        requireCieKey(key)
+     }
+ 
+     override fun engineInit(
+@@ -21,6 +22,7 @@ internal class Cipher : CipherSpi() {
+         params: AlgorithmParameterSpec?,
+         random: SecureRandom?
+     ) {
++        requireCieKey(key)
+     }
+ 
+     override fun engineInit(
+@@ -29,6 +31,7 @@ internal class Cipher : CipherSpi() {
+         params: AlgorithmParameters?,
+         random: SecureRandom?
+     ) {
++        requireCieKey(key)
+     }
+ 
+     override fun engineGetIV(): ByteArray {
+@@ -37,7 +40,7 @@ internal class Cipher : CipherSpi() {
+ 
+     override fun engineDoFinal(input: ByteArray?, inputOffset: Int, inputLen: Int): ByteArray? {
+         if (input == null) return byteArrayOf()
+-        return ReadCie.cieCommands?.sign(input, NfcEvent.SIGN_WITH_CIPHER)
++        return CieSigner.sign(input.copyOfRange(inputOffset, inputOffset + inputLen), NfcEvent.SIGN_WITH_CIPHER)
+     }
+ 
+     override fun engineDoFinal(
+@@ -78,4 +81,10 @@ internal class Cipher : CipherSpi() {
+     override fun engineGetOutputSize(inputLen: Int): Int {
+         return 0
+     }
++
++    // Only handle the card key, so this provider (inserted first) never
++    // captures RSA operations for unrelated keys.
++    private fun requireCieKey(key: Key?) {
++        if (key !is CiePrivateKey) throw InvalidKeyException("Not a CIE key")
++    }
+ }

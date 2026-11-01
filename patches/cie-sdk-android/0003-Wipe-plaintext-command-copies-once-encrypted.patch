@@ -1,0 +1,67 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: OpenCIE <opencie@localhost>
+Date: Sat, 31 Oct 2026 14:57:24 +0000
+Subject: [PATCH 3/4] Wipe plaintext command copies once encrypted
+
+Secure messaging assembled the plaintext command (for VERIFY PIN, the PIN
+itself) through several intermediate arrays and left them to the garbage
+collector. Build it once and zero it, and the padded data copies in sm(),
+as soon as they are encrypted.
+---
+ .../app/cie/cie/ApduSecureMessageManager.kt   | 30 +++++++++++++------
+ 1 file changed, 21 insertions(+), 9 deletions(-)
+
+diff --git a/CieSDK/src/main/java/it/pagopa/io/app/cie/cie/ApduSecureMessageManager.kt b/CieSDK/src/main/java/it/pagopa/io/app/cie/cie/ApduSecureMessageManager.kt
+index e1d462d..235f28c 100644
+--- a/CieSDK/src/main/java/it/pagopa/io/app/cie/cie/ApduSecureMessageManager.kt
++++ b/CieSDK/src/main/java/it/pagopa/io/app/cie/cie/ApduSecureMessageManager.kt
+@@ -24,13 +24,11 @@ internal class ApduSecureMessageManager(private val onTransmit: OnTransmit) {
+         val ds = data.size
+         //READ BINARY command (EVEN and ODD) is limited to ‘E7’ = 231 bytes (included), so that the data protected in integrity & confidentiality with the secure messaging does not exceed 256 bytes.
+         if (ds < unsignedToBytes(0xe7)) {
+-            apduSm = byteArrayOf()
+-            apduSm = Utils.appendByteArray(apduSm, head)
+-            apduSm = Utils.appendByte(apduSm, ds.toByte())
+-            apduSm = Utils.appendByteArray(apduSm, data)
+-            if (le != null)
+-                apduSm = Utils.appendByteArray(apduSm, le)
+-            val pair = sm(seq, sessionEncryption, sessMac, apduSm)
++            // Build the plaintext command once (same bytes as appending head,
++            // Lc, data and Le) and wipe it once encrypted: it may hold the PIN.
++            val plain = plainCommand(head, data, le)
++            val pair = sm(seq, sessionEncryption, sessMac, plain)
++            plain.fill(0)
+             seq = pair.first
+             apduSm = pair.second
+             var apduResponse = onTransmit.sendCommand(apduSm, event)
+@@ -92,8 +90,12 @@ internal class ApduSecureMessageManager(private val onTransmit: OnTransmit) {
+ 
+         if (apdu[4].toInt() != 0 && apdu.size > 5) {
+             //encrypting partial data
+-            val d1 = Utils.getIsoPad(Utils.getSub(apdu, 5, apdu[4].toInt()))
++            val plain = Utils.getSub(apdu, 5, apdu[4].toInt())
++            val d1 = Utils.getIsoPad(plain)
+             val enc = Algorithms.desEnc(keyEnc, d1)
++            // These plaintext copies may hold the PIN.
++            plain.fill(0)
++            d1.fill(0)
+             doob = if (apdu[1].toInt() and 1 == 0) {
+                 Utils.asn1Tag(Utils.appendByteArray(byteArrayOf(0x01), enc), 0x87)
+             } else Utils.asn1Tag(enc, 0x85)
+@@ -285,4 +287,14 @@ internal class ApduSecureMessageManager(private val onTransmit: OnTransmit) {
+         }
+         return tmpIndex
+     }
+-}
+\ No newline at end of file
++}
++
++/** `head || Lc || data || le` as one array, for a short command (data < 0xE7 bytes). */
++internal fun plainCommand(head: ByteArray, data: ByteArray, le: ByteArray?): ByteArray {
++    val out = ByteArray(head.size + 1 + data.size + (le?.size ?: 0))
++    head.copyInto(out, 0)
++    out[head.size] = data.size.toByte()
++    data.copyInto(out, head.size + 1)
++    le?.copyInto(out, head.size + 1 + data.size)
++    return out
++}

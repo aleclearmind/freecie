@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- OpenCIE is Italian-only: these are the default (and only) strings. -->
+<resources>
+    <string name="app_name">OpenCIE</string>
+
+    <string name="home_title">Accedi dal computer con la tua CIE</string>
+    <string name="home_step1">Sul computer scegli “Entra con CIE” e prosegui con lo smartphone (livello 3). La pagina mostra un codice QR.</string>
+    <string name="home_step2">Inquadra il codice QR con questa app.</string>
+    <string name="home_step3">Inserisci il PIN della CIE (8 cifre) e appoggia la carta sul retro del telefono.</string>
+    <string name="home_step4">Digita sul computer il codice di 4 cifre mostrato qui.</string>
+    <string name="scan_qr">Inquadra il codice QR</string>
+    <string name="paste_link">Inserisci il link del QR a mano</string>
+    <string name="paste_link_hint">https://idserver.servizicie.interno.gov.it/…</string>
+    <string name="continue_button">Continua</string>
+    <string name="cancel">Annulla</string>
+    <string name="done">Fatto</string>
+    <string name="retry">Riprova</string>
+    <string name="scan_prompt">Inquadra il codice QR mostrato sul computer</string>
+    <string name="unofficial_notice">App open source non ufficiale, non affiliata a IPZS né al Ministero dell’Interno. Il PIN serve solo a sbloccare la carta e non viene mai salvato.</string>
+
+    <string name="nfc_missing">Questo telefono non ha l’NFC, necessario per leggere la CIE.</string>
+    <string name="nfc_disabled">L’NFC è disattivato.</string>
+    <string name="nfc_open_settings">Attiva l’NFC</string>
+
+    <string name="request_title">Richiesta di accesso</string>
+    <string name="request_service">Servizio</string>
+    <string name="request_unknown_service">Servizio sconosciuto</string>
+    <string name="request_level3">Livello 3: carta CIE e PIN</string>
+    <string name="request_warning">Prosegui solo se hai appena avviato tu questo accesso dal tuo computer.</string>
+    <string name="pin_label">PIN della CIE (8 cifre)</string>
+    <string name="pin_invalid">Il PIN deve essere di 8 cifre.</string>
+    <string name="pin_attempts_left">PIN errato. Tentativi rimasti: %1$d.</string>
+
+    <string name="tap_title">Appoggia la CIE sul retro del telefono</string>
+    <string name="tap_body">Tienila ferma finché non compare il codice. Servono pochi secondi e una connessione a internet.</string>
+    <string name="step_connecting">Connessione alla carta…</string>
+    <string name="step_secure_channel">Apertura del canale sicuro e verifica del PIN…</string>
+    <string name="step_certificate">Lettura del certificato di autenticazione…</string>
+    <string name="step_signing">Firma della richiesta di accesso…</string>
+    <string name="step_server">Contatto con il server di identità CIE…</string>
+
+    <string name="otp_title">Digita questo codice sul computer</string>
+    <string name="otp_body">Puoi allontanare la carta. Inserisci il codice nella pagina di accesso aperta sul computer per completare l’accesso.</string>
+
+    <string name="error_title">Accesso non riuscito</string>
+    <string name="error_qr_invalid">Questo non è un codice QR di accesso CIE.</string>
+    <string name="error_qr_host">Questo codice QR non proviene dal server di identità CIE (%1$s).</string>
+    <string name="error_qr_level">Questo codice QR è per un accesso di livello %1$s (credenziali CieID). OpenCIE supporta solo il livello 3 con la carta: sul computer scegli l’opzione di livello 3 con carta e smartphone.</string>
+    <string name="error_not_cie">La carta non è una CIE 3.0.</string>
+    <string name="error_extended_apdu">L’NFC di questo telefono non supporta i comandi estesi richiesti dalla CIE.</string>
+    <string name="error_pin_blocked">Il PIN è bloccato dopo troppi tentativi errati. Sbloccalo con il PUK (ad esempio con l’app ufficiale CieID o il middleware CIE).</string>
+    <string name="error_tag_lost">La carta è stata allontanata troppo presto. Riprova e tienila ferma finché non compare il codice.</string>
+    <string name="error_no_network">Impossibile raggiungere il server di identità CIE. Controlla la connessione a internet.</string>
+    <string name="error_cert_expired">Il certificato di autenticazione della carta è scaduto.</string>
+    <string name="error_cert_revoked">Il certificato di autenticazione della carta è stato revocato.</string>
+    <string name="error_http">Il server di identità ha risposto con HTTP %1$d. Il codice QR potrebbe essere scaduto: ricarica la pagina sul computer e inquadralo di nuovo.</string>
+    <string name="error_server">Il server di identità ha rifiutato l’accesso: %1$s</string>
+    <string name="error_card">Errore della carta: %1$s</string>
+    <string name="error_generic">Errore imprevisto: %1$s</string>
+
+    <!-- Dai mockup OpenCIE -->
+    <string name="pin_reenter">Inserisci di nuovo il PIN.</string>
+    <string name="pin_last_attempt">Un altro PIN errato blocca la carta e servirà il PUK per sbloccarla.</string>
+    <string name="close">Chiudi</string>
+    <string name="camera_denied">Serve l’accesso alla fotocamera per inquadrare il codice QR. Puoi anche inserire il link a mano.</string>
+    <string name="hold_illustration_a11y">Una carta appoggiata sulla parte alta del retro del telefono</string>
+    <string name="step_done">Completato</string>
+    <string name="step_current">In corso</string>
+    <string name="step_pending">In attesa</string>
+    <string name="code_a11y">Codice: %1$s</string>
+
+    <!-- Registro diagnostico -->
+    <string name="log_title">Registro diagnostico</string>
+    <string name="log_privacy">Ogni passaggio dell’accesso, i comandi inviati alla carta (solo le intestazioni) e gli indirizzi contattati. Non vengono registrati PIN, codici, dati del QR o dati personali.</string>
+    <string name="log_empty">Il registro è vuoto.</string>
+    <string name="log_share">Condividi registro</string>
+    <string name="log_share_subject">Registro diagnostico OpenCIE</string>
+    <string name="log_copy">Copia</string>
+    <string name="log_copied">Registro copiato</string>
+    <string name="log_clear">Cancella</string>
+    <string name="log_clear_title">Cancellare il registro?</string>
+    <string name="log_clear_body">Tutti gli eventi registrati verranno eliminati.</string>
+    <string name="log_show">Mostra registro diagnostico</string>
+    <string name="back">Indietro</string>
+</resources>

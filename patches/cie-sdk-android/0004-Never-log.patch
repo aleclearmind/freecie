@@ -1,0 +1,54 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: OpenCIE <opencie@localhost>
+Date: Sat, 31 Oct 2026 14:57:24 +0000
+Subject: [PATCH 4/4] Never log
+
+CieLogger wrote to logcat when enabled; card traffic must never reach logcat.
+Make every method a no-op.
+---
+ .../java/it/pagopa/io/app/cie/CieLogger.kt    | 33 ++++++-------------
+ 1 file changed, 10 insertions(+), 23 deletions(-)
+
+diff --git a/CieSDK/src/main/java/it/pagopa/io/app/cie/CieLogger.kt b/CieSDK/src/main/java/it/pagopa/io/app/cie/CieLogger.kt
+index 55baca1..08d8522 100644
+--- a/CieSDK/src/main/java/it/pagopa/io/app/cie/CieLogger.kt
++++ b/CieSDK/src/main/java/it/pagopa/io/app/cie/CieLogger.kt
+@@ -1,27 +1,14 @@
+ package it.pagopa.io.app.cie
+ 
+-import android.util.Log
+-
+-/**Object to manage logs from library, normally in your activity you should put enabled=BuildConfig.DEBUG*/
++/**
++ * Logging is disabled for good: with logging on, the SDK could write card
++ * traffic to logcat. Kept as no-ops so callers compile unchanged.
++ */
++@Suppress("UNUSED_PARAMETER")
+ object CieLogger {
+     var enabled = false
+-    fun v(tag: String, message: String) {
+-        if (enabled)
+-            Log.v(tag, message)
+-    }
+-
+-    fun e(tag: String, message: String) {
+-        if (enabled)
+-            Log.e(tag, message)
+-    }
+-
+-    fun d(tag: String, message: String) {
+-        if (enabled)
+-            Log.d(tag, message)
+-    }
+-
+-    fun i(tag: String, message: String) {
+-        if (enabled)
+-            Log.i(tag, message)
+-    }
+-}
+\ No newline at end of file
++    fun v(tag: String, message: String) {}
++    fun e(tag: String, message: String) {}
++    fun d(tag: String, message: String) {}
++    fun i(tag: String, message: String) {}
++}
