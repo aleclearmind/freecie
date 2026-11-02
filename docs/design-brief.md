@@ -1,4 +1,4 @@
-# Design brief: OpenCIE
+# Design brief: FreeCIE
 
 An Android app for logging in on a computer with the Italian electronic ID card (CIE), level 3.
 
@@ -89,7 +89,7 @@ Title "Accesso non riuscito", a message, and buttons "Riprova" (where it makes s
 "Annulla". Messages to design for (some are long):
 
 - Not a CIE login QR: "Questo non è un codice QR di accesso CIE."
-- Level 2 QR: "Questo codice QR è per un accesso di livello 2 (credenziali CieID). OpenCIE
+- Level 2 QR: "Questo codice QR è per un accesso di livello 2 (credenziali CieID). FreeCIE
   supporta solo il livello 3 con la carta: sul computer scegli l’opzione di livello 3 con carta
   e smartphone."
 - PIN blocked (no retry): "Il PIN è bloccato dopo troppi tentativi errati. Sbloccalo con il PUK

@@ -1,4 +1,4 @@
-# OpenCIE
+# FreeCIE
 
 Unofficial, open-source Android app that does one thing: **log in on a computer
 with your Italian electronic ID card (CIE) at level 3**, using the phone as the
@@ -6,7 +6,7 @@ card reader. It replaces the CieID app for the "computer + smartphone" flow:
 
 1. On the computer, pick **Entra con CIE** and continue with the smartphone
    (level 3). The page shows a QR code.
-2. Scan it with OpenCIE, type the 8-digit card PIN, hold the CIE against the
+2. Scan it with FreeCIE, type the 8-digit card PIN, hold the CIE against the
    back of the phone.
 3. Type the 4-digit code the app shows into the computer.
 
@@ -42,12 +42,12 @@ CieID 1.7.28 (`it.ipzs.cieid`), whose card layer is the same lineage of code
 
 Code map:
 
-- `app/src/main/java/org/opencie/app/QrLoginRequest.kt`: QR parsing and validation (only the two identity-server hosts are accepted).
+- `app/src/main/java/org/freecie/app/QrLoginRequest.kt`: QR parsing and validation (only the two identity-server hosts are accepted).
 - `HybridAuth.kt`: what gets signed, the form body, response parsing.
 - `HybridClient.kt`: OkHttp over mutual TLS with the card-backed key.
 - `CieLogin.kt`: the whole card + server sequence and error classification.
 - `LoginViewModel.kt`, `MainActivity.kt`: NFC reader mode, camera permission, screen state.
-- `ui/`: Compose UI implementing the Claude Design mockups ("OpenCIE Mockups", brief in
+- `ui/`: Compose UI implementing the Claude Design mockups ("FreeCIE Mockups", brief in
   [docs/design-brief.md](docs/design-brief.md)), including the in-app ZXing scanner overlay and
   the hold-card illustration. `ScreenshotTest` renders every screen in light and dark.
 - No third-party code is copied into this repository. See "Card layer" below.
@@ -60,7 +60,7 @@ The flake fetches
 [`patches/cie-sdk-android/`](patches/cie-sdk-android). It keeps only the
 card-protocol sources (APDUs, secure messaging, PIN, certificate, signing and
 the card-backed JCA key: `cieSdkFiles` in `flake.nix`) and passes their path to
-Gradle as `OPENCIE_CIE_SDK_SRC` (`nix build .#cieSdkSrc` shows the result).
+Gradle as `FREECIE_CIE_SDK_SRC` (`nix build .#cieSdkSrc` shows the result).
 
 The Maven Central artifact can't be used as is. Its public API covers the
 mobile `Login2` flow, NIS and PACE, but not the computer flow. The classes we
@@ -114,7 +114,7 @@ nix build .#apk-debug    # debug-signed APK, installable for testing
 nix build .#screenshots  # every screen, light and dark (also screenshot-<screen>-<theme> release files)
 nix flake check          # JVM unit tests + screenshot regression check
 nix run                  # adb install the debug APK on a connected phone
-nix develop              # JDK 21, Gradle, Android SDK 35, OPENCIE_CIE_SDK_SRC; then: gradle assembleDebug
+nix develop              # JDK 21, Gradle, Android SDK 35, FREECIE_CIE_SDK_SRC; then: gradle assembleDebug
 ```
 
 Unit tests cover QR parsing, the protocol format and the secure-messaging

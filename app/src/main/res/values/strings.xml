@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- OpenCIE is Italian-only: these are the default (and only) strings. -->
+<!-- FreeCIE is Italian-only: these are the default (and only) strings. -->
 <resources>
-    <string name="app_name">OpenCIE</string>
+    <string name="app_name">FreeCIE</string>
 
     <string name="home_title">Accedi dal computer con la tua CIE</string>
     <string name="home_step1">Sul computer scegli “Entra con CIE” e prosegui con lo smartphone (livello 3). La pagina mostra un codice QR.</string>
@@ -45,7 +45,7 @@
     <string name="error_title">Accesso non riuscito</string>
     <string name="error_qr_invalid">Questo non è un codice QR di accesso CIE.</string>
     <string name="error_qr_host">Questo codice QR non proviene dal server di identità CIE (%1$s).</string>
-    <string name="error_qr_level">Questo codice QR è per un accesso di livello %1$s (credenziali CieID). OpenCIE supporta solo il livello 3 con la carta: sul computer scegli l’opzione di livello 3 con carta e smartphone.</string>
+    <string name="error_qr_level">Questo codice QR è per un accesso di livello %1$s (credenziali CieID). FreeCIE supporta solo il livello 3 con la carta: sul computer scegli l’opzione di livello 3 con carta e smartphone.</string>
     <string name="error_not_cie">La carta non è una CIE 3.0.</string>
     <string name="error_extended_apdu">L’NFC di questo telefono non supporta i comandi estesi richiesti dalla CIE.</string>
     <string name="error_pin_blocked">Il PIN è bloccato dopo troppi tentativi errati. Sbloccalo con il PUK (ad esempio con l’app ufficiale CieID o il middleware CIE).</string>
@@ -58,7 +58,7 @@
     <string name="error_card">Errore della carta: %1$s</string>
     <string name="error_generic">Errore imprevisto: %1$s</string>
 
-    <!-- Dai mockup OpenCIE -->
+    <!-- Dai mockup FreeCIE -->
     <string name="pin_reenter">Inserisci di nuovo il PIN.</string>
     <string name="pin_last_attempt">Un altro PIN errato blocca la carta e servirà il PUK per sbloccarla.</string>
     <string name="close">Chiudi</string>
@@ -74,7 +74,7 @@
     <string name="log_privacy">Ogni passaggio dell’accesso, i comandi inviati alla carta (solo le intestazioni) e gli indirizzi contattati. Non vengono registrati PIN, codici, dati del QR o dati personali.</string>
     <string name="log_empty">Il registro è vuoto.</string>
     <string name="log_share">Condividi registro</string>
-    <string name="log_share_subject">Registro diagnostico OpenCIE</string>
+    <string name="log_share_subject">Registro diagnostico FreeCIE</string>
     <string name="log_copy">Copia</string>
     <string name="log_copied">Registro copiato</string>
     <string name="log_clear">Cancella</string>

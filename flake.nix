@@ -1,5 +1,5 @@
 {
-  description = "OpenCIE — unofficial CIE level 3 login from a computer (QR + NFC), arm64-v8a Android APK";
+  description = "FreeCIE — unofficial CIE level 3 login from a computer (QR + NFC), arm64-v8a Android APK";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
@@ -20,7 +20,7 @@
         };
         lib = pkgs.lib;
 
-        pname = "opencie";
+        pname = "freecie";
         version = "0.1.0";
         jdk = pkgs.jdk21;
         gradle = pkgs.gradle_8;
@@ -41,10 +41,10 @@
         # The CIE card layer comes from pagopa/cie-sdk-android (MIT), the SDK
         # the IO app uses: fetched at a pinned commit, patched with
         # ./patches/cie-sdk-android, and reduced to the card-protocol sources
-        # that Gradle compiles into the app (OPENCIE_CIE_SDK_SRC).
+        # that Gradle compiles into the app (FREECIE_CIE_SDK_SRC).
         cieSdkRev = "5aed46485c20e6ce3a430dfec908c26a4831ff67"; # v0.1.11
         cieSdkPatched = pkgs.applyPatches {
-          name = "cie-sdk-android-${builtins.substring 0 7 cieSdkRev}-opencie";
+          name = "cie-sdk-android-${builtins.substring 0 7 cieSdkRev}-freecie";
           src = pkgs.fetchFromGitHub {
             owner = "pagopa";
             repo = "cie-sdk-android";
@@ -147,7 +147,7 @@
           export ANDROID_HOME="${sdkRoot}"
           export ANDROID_SDK_ROOT="${sdkRoot}"
           export JAVA_HOME="${jdk.home}"
-          export OPENCIE_CIE_SDK_SRC="${cieSdkSrc}"
+          export FREECIE_CIE_SDK_SRC="${cieSdkSrc}"
           export GRADLE_OPTS="-Dorg.gradle.project.android.aapt2FromMavenOverride=${sdkRoot}/build-tools/${buildToolsVersion}/aapt2"
         '';
 
@@ -241,7 +241,7 @@
             ];
             passthru = { inherit gradleRepo androidSdk; };
             meta = {
-              description = "OpenCIE release APK (unsigned)";
+              description = "FreeCIE release APK (unsigned)";
               platforms = [
                 "x86_64-linux"
                 "aarch64-linux"
@@ -260,7 +260,7 @@
             cp app/build/outputs/apk/debug/app-debug.apk "$out"
             runHook postInstall
           '';
-          extraAttrs.meta.description = "OpenCIE debug APK (debug-signed, for testing)";
+          extraAttrs.meta.description = "FreeCIE debug APK (debug-signed, for testing)";
         };
 
         unitTests = mkGradleBuild {
@@ -272,7 +272,7 @@
             cp -r app/build/test-results/testDebugUnitTest/. "$out/"
             runHook postInstall
           '';
-          extraAttrs.meta.description = "OpenCIE JVM unit tests";
+          extraAttrs.meta.description = "FreeCIE JVM unit tests";
         };
 
         # Paparazzi renders every screen (light/dark) on the JVM, no device.
@@ -289,7 +289,7 @@
             done
             runHook postInstall
           '';
-          extraAttrs.meta.description = "OpenCIE screen renders (Paparazzi)";
+          extraAttrs.meta.description = "FreeCIE screen renders (Paparazzi)";
         };
 
         # Fails when the UI no longer matches app/src/test/snapshots/images.
@@ -302,7 +302,7 @@
             cp -r app/build/reports/paparazzi/. "$out/" 2>/dev/null || true
             runHook postInstall
           '';
-          extraAttrs.meta.description = "OpenCIE screenshot regression check";
+          extraAttrs.meta.description = "FreeCIE screenshot regression check";
         };
 
         screenshotNames =
@@ -324,11 +324,11 @@
           pkgs.runCommand "${pname}-${n}.png" {
             __structuredAttrs = true;
             ci = [ { action = "release"; } ];
-            meta.description = "OpenCIE screenshot release artifact: ${n}";
+            meta.description = "FreeCIE screenshot release artifact: ${n}";
           } "cp ${screenshots}/${pname}-${n}.png \"$out\"";
 
         installDebug = pkgs.writeShellApplication {
-          name = "opencie-install";
+          name = "freecie-install";
           text = ''
             exec ${sdkRoot}/platform-tools/adb install -r ${apkDebug} "$@"
           '';
@@ -355,8 +355,8 @@
         };
         apps.default = {
           type = "app";
-          program = "${installDebug}/bin/opencie-install";
-          meta.description = "Install the OpenCIE debug APK on the connected device via adb";
+          program = "${installDebug}/bin/freecie-install";
+          meta.description = "Install the FreeCIE debug APK on the connected device via adb";
         };
         devShells.default = pkgs.mkShell {
           packages = [

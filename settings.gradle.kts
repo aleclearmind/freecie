@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "opencie"
+rootProject.name = "freecie"
 include(":app")

@@ -6,12 +6,12 @@ plugins {
 }
 
 android {
-    namespace = "org.opencie.app"
+    namespace = "org.freecie.app"
     compileSdk = 35
     buildToolsVersion = "35.0.0"
 
     defaultConfig {
-        applicationId = "org.opencie.app"
+        applicationId = "org.freecie.app"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -22,8 +22,8 @@ android {
 
     // CIE card layer from pagopa/cie-sdk-android at a pinned commit, patched
     // and provided by the Nix flake (packages.cieSdkSrc); see patches/.
-    val cieSdkSrc = providers.environmentVariable("OPENCIE_CIE_SDK_SRC").orNull
-        ?: error("OPENCIE_CIE_SDK_SRC is not set: build inside `nix develop` (see README)")
+    val cieSdkSrc = providers.environmentVariable("FREECIE_CIE_SDK_SRC").orNull
+        ?: error("FREECIE_CIE_SDK_SRC is not set: build inside `nix develop` (see README)")
     sourceSets["main"].java.srcDir(cieSdkSrc)
 
     // A fixed, public debug key, so every debug build (Nix or not) can update
